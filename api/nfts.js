@@ -1,21 +1,26 @@
 // Vercel serverless function: /api/nfts
-// Uses Etherscan's unified V2 API (supports Cronos) for transfer history,
-// then reads each token's metadata directly from the chain via public RPC.
-// Set ETHERSCAN_API_KEY in your Vercel project's Environment Variables
-// (free key from etherscan.io/apis works across all supported chains).
+// Reads NFT ownership directly from the chain via public RPC — no API key,
+// no third-party indexer, no signup required. Works for any standard ERC721
+// contract (doesn't require the optional "enumerable" extension), by:
+//   1. Binary-searching for the contract's deployment block (cheap, ~log2(N) calls)
+//   2. Reading every Transfer event involving the wallet since then
+//   3. Replaying those events to work out current holdings
+//   4. Reading each held token's metadata via tokenURI
 
 const CHAINS = {
-  'cronos-mainnet': { chainId: 25, rpc: 'https://evm.cronos.org' },
-  'eth-mainnet': { chainId: 1, rpc: 'https://eth.llamarpc.com' },
-  'matic-mainnet': { chainId: 137, rpc: 'https://polygon-rpc.com' },
-  'base-mainnet': { chainId: 8453, rpc: 'https://mainnet.base.org' },
-  'arbitrum-mainnet': { chainId: 42161, rpc: 'https://arb1.arbitrum.io/rpc' },
-  'optimism-mainnet': { chainId: 10, rpc: 'https://mainnet.optimism.io' }
+  'cronos-mainnet': { rpc: 'https://evm.cronos.org' },
+  'eth-mainnet': { rpc: 'https://eth.llamarpc.com' },
+  'matic-mainnet': { rpc: 'https://polygon-rpc.com' },
+  'base-mainnet': { rpc: 'https://mainnet.base.org' },
+  'arbitrum-mainnet': { rpc: 'https://arb1.arbitrum.io/rpc' },
+  'optimism-mainnet': { rpc: 'https://mainnet.optimism.io' }
 };
 
 const DEFAULT_CONTRACT = '0xddea51dd8649e0605770348ceb417c64c1b350c7';
 const DEFAULT_CHAIN = 'cronos-mainnet';
-const MAX_TOKENS = 30; // safety cap so one wallet can't stall the function
+const MAX_TOKENS = 30;
+const TRANSFER_TOPIC = '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef';
+const MAX_LOG_CALLS = 60; // hard safety cap so a stubborn RPC can't hang the function
 
 function ipfsToHttp(uri) {
   if (!uri) return uri;
@@ -32,32 +37,77 @@ function decodeAbiString(hex) {
   return Buffer.from(strHex, 'hex').toString('utf8');
 }
 
-async function rpcCall(rpcUrl, to, data) {
+function addressToTopic(address) {
+  return '0x' + address.toLowerCase().replace('0x', '').padStart(64, '0');
+}
+
+async function rpc(rpcUrl, method, params) {
   const res = await fetch(rpcUrl, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'eth_call', params: [{ to, data }, 'latest'] })
+    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params })
   });
   const json = await res.json();
-  if (json.error) throw new Error(json.error.message || 'RPC error');
+  if (json.error) {
+    const err = new Error(json.error.message || 'RPC error');
+    err.rpcError = json.error;
+    throw err;
+  }
   return json.result;
 }
 
+async function getBlockNumber(rpcUrl) {
+  const hex = await rpc(rpcUrl, 'eth_blockNumber', []);
+  return parseInt(hex, 16);
+}
+
+async function getCode(rpcUrl, contract, blockNum) {
+  return rpc(rpcUrl, 'eth_getCode', [contract, '0x' + blockNum.toString(16)]);
+}
+
+// Binary-search for the block the contract was deployed in.
+async function findDeploymentBlock(rpcUrl, contract, latest) {
+  let lo = 0, hi = latest;
+  while (lo < hi) {
+    const mid = Math.floor((lo + hi) / 2);
+    const code = await getCode(rpcUrl, contract, mid);
+    if (code && code !== '0x') hi = mid; else lo = mid + 1;
+  }
+  return lo;
+}
+
+// Adaptively fetch logs, splitting the range in half whenever the node
+// rejects a request for covering too many blocks at once.
+async function getLogsAdaptive(rpcUrl, params, fromBlock, toBlock, budget) {
+  if (budget.calls >= MAX_LOG_CALLS) throw new Error('Exceeded log-scan budget');
+  budget.calls++;
+  try {
+    return await rpc(rpcUrl, 'eth_getLogs', [Object.assign({}, params, {
+      fromBlock: '0x' + fromBlock.toString(16),
+      toBlock: '0x' + toBlock.toString(16)
+    })]);
+  } catch (e) {
+    if (fromBlock >= toBlock) throw e; // can't split further
+    const mid = fromBlock + Math.floor((toBlock - fromBlock) / 2);
+    const [left, right] = await Promise.all([
+      getLogsAdaptive(rpcUrl, params, fromBlock, mid, budget),
+      getLogsAdaptive(rpcUrl, params, mid + 1, toBlock, budget)
+    ]);
+    return left.concat(right);
+  }
+}
+
 async function getTokenURI(rpcUrl, contract, tokenId) {
-  const selector = '0xc87b56dd'; // tokenURI(uint256)
-  const paddedId = BigInt(tokenId).toString(16).padStart(64, '0');
-  const data = selector + paddedId;
-  const result = await rpcCall(rpcUrl, contract, data);
+  const data = '0xc87b56dd' + BigInt(tokenId).toString(16).padStart(64, '0');
+  const result = await rpc(rpcUrl, 'eth_call', [{ to: contract, data }, 'latest']);
   return decodeAbiString(result);
 }
 
 async function getMetadata(tokenUri) {
   if (tokenUri.startsWith('data:application/json;base64,')) {
-    const json = Buffer.from(tokenUri.split(',')[1], 'base64').toString('utf8');
-    return JSON.parse(json);
+    return JSON.parse(Buffer.from(tokenUri.split(',')[1], 'base64').toString('utf8'));
   }
-  const url = ipfsToHttp(tokenUri);
-  const res = await fetch(url);
+  const res = await fetch(ipfsToHttp(tokenUri));
   if (!res.ok) throw new Error('metadata fetch failed');
   return res.json();
 }
@@ -73,37 +123,37 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Unsupported chain: ' + chain });
   }
 
-  const apiKey = process.env.ETHERSCAN_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'Server is missing ETHERSCAN_API_KEY. Set it in your Vercel project settings.' });
-  }
-
   try {
-    // 1. Pull NFT transfer history for this wallet + contract, work out current holdings.
-    const txUrl = 'https://api.etherscan.io/v2/api?chainid=' + chainInfo.chainId +
-      '&module=account&action=tokennfttx&contractaddress=' + encodeURIComponent(contract) +
-      '&address=' + encodeURIComponent(address) + '&page=1&offset=1000&sort=asc&apikey=' + apiKey;
+    const rpcUrl = chainInfo.rpc;
+    const latest = await getBlockNumber(rpcUrl);
+    const deployBlock = await findDeploymentBlock(rpcUrl, contract, latest);
 
-    const txRes = await fetch(txUrl);
-    const txData = await txRes.json();
+    const walletTopic = addressToTopic(address);
+    const budget = { calls: 0 };
 
-    if (txData.status !== '1' && txData.message !== 'No transactions found') {
-      return res.status(502).json({ error: 'Etherscan API error: ' + (txData.result || txData.message) });
-    }
+    const [transfersIn, transfersOut] = await Promise.all([
+      getLogsAdaptive(rpcUrl, { address: contract, topics: [TRANSFER_TOPIC, null, walletTopic] }, deployBlock, latest, budget),
+      getLogsAdaptive(rpcUrl, { address: contract, topics: [TRANSFER_TOPIC, walletTopic, null] }, deployBlock, latest, budget)
+    ]);
+
+    const events = transfersIn.map(l => ({ ...l, dir: 'in' })).concat(transfersOut.map(l => ({ ...l, dir: 'out' })));
+    events.sort((a, b) => {
+      const bn = parseInt(a.blockNumber, 16) - parseInt(b.blockNumber, 16);
+      if (bn !== 0) return bn;
+      return parseInt(a.logIndex, 16) - parseInt(b.logIndex, 16);
+    });
 
     const owned = new Set();
-    const wallet = address.toLowerCase();
-    (txData.result || []).forEach(tx => {
-      if (tx.to && tx.to.toLowerCase() === wallet) owned.add(tx.tokenID);
-      if (tx.from && tx.from.toLowerCase() === wallet) owned.delete(tx.tokenID);
+    events.forEach(ev => {
+      const tokenId = BigInt(ev.topics[3]).toString();
+      if (ev.dir === 'in') owned.add(tokenId); else owned.delete(tokenId);
     });
 
     const tokenIds = Array.from(owned).slice(0, MAX_TOKENS);
 
-    // 2. Read each owned token's metadata directly from the chain.
     const cards = await Promise.all(tokenIds.map(async (tokenId) => {
       try {
-        const uri = await getTokenURI(chainInfo.rpc, contract, tokenId);
+        const uri = await getTokenURI(rpcUrl, contract, tokenId);
         const meta = await getMetadata(uri);
         return {
           id: contract + '-' + tokenId,
@@ -119,6 +169,6 @@ export default async function handler(req, res) {
     res.setHeader('Cache-Control', 's-maxage=30, stale-while-revalidate=120');
     return res.status(200).json({ cards });
   } catch (e) {
-    return res.status(500).json({ error: e.message || 'Failed to load NFTs.' });
+    return res.status(500).json({ error: e.message || 'Failed to load NFTs from the chain.' });
   }
 }
