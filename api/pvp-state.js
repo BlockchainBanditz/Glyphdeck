@@ -1,6 +1,6 @@
 // Returns the current state of a match so the client can render it.
-const URL = process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const URL = process.env.KV_REST_API_URL;
+const TOKEN = process.env.KV_REST_API_TOKEN;
 
 async function redis(cmd) {
   const res = await fetch(URL, {
@@ -26,7 +26,7 @@ function publicView(match) {
 }
 
 export default async function handler(req, res) {
-  if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN.' });
+  if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing KV_REST_API_URL / KV_REST_API_TOKEN.' });
   const { matchId, role, token } = req.query;
   if (!matchId || !role || !token) return res.status(400).json({ error: 'Missing matchId, role or token.' });
 

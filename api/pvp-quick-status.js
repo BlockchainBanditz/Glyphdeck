@@ -1,6 +1,6 @@
 // Poll this while waiting in the public queue to find out if we've been matched.
-const URL = process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const URL = process.env.KV_REST_API_URL;
+const TOKEN = process.env.KV_REST_API_TOKEN;
 
 async function redis(cmd) {
   const res = await fetch(URL, {
@@ -14,7 +14,7 @@ async function redis(cmd) {
 }
 
 export default async function handler(req, res) {
-  if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN.' });
+  if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing KV_REST_API_URL / KV_REST_API_TOKEN.' });
   const ticket = req.query.ticket;
   if (!ticket) return res.status(400).json({ error: 'Missing ticket.' });
 

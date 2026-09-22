@@ -1,8 +1,8 @@
 // Creates a PvP room. Returns a 6-char code the creator shares with a friend.
 import { randomUUID } from 'node:crypto';
 
-const URL = process.env.UPSTASH_REDIS_REST_URL;
-const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const URL = process.env.KV_REST_API_URL;
+const TOKEN = process.env.KV_REST_API_TOKEN;
 
 async function redis(cmd) {
   const res = await fetch(URL, {
@@ -21,7 +21,7 @@ function makeCode() {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
-  if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN.' });
+  if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing KV_REST_API_URL / KV_REST_API_TOKEN.' });
 
   const { name, card } = req.body || {};
   if (!card || !card.stats) return res.status(400).json({ error: 'Missing card.' });
