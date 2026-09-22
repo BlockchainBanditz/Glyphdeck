@@ -1,0 +1,899 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MOST WANTED — Your Wallet Is Your Gang</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #0A0D14;
+    --bg-2: #0E1220;
+    --panel: #131829;
+    --panel-2: #1A2138;
+    --border: #262F48;
+    --text: #EDF1F8;
+    --muted: #8D97B3;
+    --cyan: #56E8D4;
+    --violet: #B084F7;
+    --gold: #F2C55C;
+    --danger: #FF6E6E;
+    --good: #56E8D4;
+    --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-body: 'Sora', 'Segoe UI', sans-serif;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: radial-gradient(ellipse 140% 100% at 50% -10%, #16203A 0%, var(--bg) 55%);
+    color: var(--text);
+    font-family: var(--font-body);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100vh;
+  }
+  a{ color: var(--cyan); }
+  .wrap{ max-width: 1120px; margin: 0 auto; padding: 0 24px; }
+
+  /* ---------- NAV ---------- */
+  nav{ display:flex; align-items:center; justify-content:space-between; padding: 22px 0; }
+  .brand{ font-family: var(--font-display); font-weight:700; font-size: 1.25rem; letter-spacing: 0.02em; display:flex; align-items:center; gap:10px; }
+  .brand .mark{ width:26px; height:26px; border-radius:6px; background: linear-gradient(135deg, var(--cyan), var(--violet)); display:inline-block; box-shadow: 0 0 18px rgba(86,232,212,0.35); }
+  .nav-status{ font-size: 0.85rem; color: var(--muted); font-family: var(--font-body); }
+  .nav-status.on{ color: var(--cyan); }
+
+  /* ---------- HERO ---------- */
+  .hero{ padding: 48px 0 40px; display:grid; grid-template-columns: 1.1fr 0.9fr; gap: 48px; align-items:center; }
+  @media (max-width: 860px){ .hero{ grid-template-columns: 1fr; padding-top: 20px; } }
+  .hero h1{
+    font-family: var(--font-display); font-weight: 700; font-size: clamp(2.1rem, 4.6vw, 3.1rem);
+    line-height: 1.08; margin: 0 0 18px; max-width: 12ch; letter-spacing: -0.01em;
+  }
+  .hero p{ color: var(--muted); font-size: 1.05rem; max-width: 46ch; margin: 0 0 26px; }
+  .hero-tag{
+    font-family: var(--font-display); font-size: 0.78rem; letter-spacing: 0.04em; color: var(--gold);
+    margin: -8px 0 16px; max-width: 34ch;
+  }
+  .hero-actions{ display:flex; gap:12px; flex-wrap:wrap; }
+
+  .btn{
+    font-family: var(--font-body); font-weight: 600; font-size: 0.95rem; border: 1px solid var(--border);
+    background: var(--panel-2); color: var(--text); padding: 13px 22px; border-radius: 10px; cursor:pointer;
+    transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+  }
+  .btn:hover{ border-color: var(--cyan); box-shadow: 0 0 0 1px rgba(86,232,212,0.25); }
+  .btn:active{ transform: scale(0.98); }
+  .btn:focus-visible{ outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .btn-primary{ background: linear-gradient(135deg, var(--cyan), #3BC7B4); color: #06110F; border: none; }
+  .btn-primary:hover{ box-shadow: 0 0 22px rgba(86,232,212,0.35); }
+  .btn:disabled{ opacity: 0.5; cursor: not-allowed; transform:none; box-shadow:none; }
+  .btn-ghost{ background: transparent; }
+  .btn-danger{ border-color: rgba(255,110,110,0.4); }
+  .btn-danger:hover{ border-color: var(--danger); box-shadow: 0 0 0 1px rgba(255,110,110,0.25); }
+
+  /* hero demo card float */
+  .hero-card-stage{ display:flex; justify-content:center; }
+  .demo-card{ animation: float 5s ease-in-out infinite; }
+  @keyframes float{ 0%,100%{ transform: translateY(0) rotate(-3deg);} 50%{ transform: translateY(-12px) rotate(2deg);} }
+  @media (prefers-reduced-motion: reduce){ .demo-card{ animation: none; } }
+
+  /* ---------- CARD COMPONENT ---------- */
+  .card{
+    width: 210px; border-radius: 16px; padding: 14px; position: relative; overflow:hidden;
+    background: linear-gradient(160deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border);
+    box-shadow: 0 18px 40px -18px rgba(0,0,0,0.6);
+  }
+  .card.tier-bronze{ border-color: #8A6A4A; }
+  .card.tier-silver{ border-color: #B8C2D6; }
+  .card.tier-gold{ border-color: var(--gold); box-shadow: 0 0 26px rgba(242,197,92,0.22), 0 18px 40px -18px rgba(0,0,0,0.6); }
+  .card.tier-legendary{ border-color: var(--violet); box-shadow: 0 0 30px rgba(176,132,247,0.32), 0 18px 40px -18px rgba(0,0,0,0.6); }
+  .card::before{
+    content:''; position:absolute; inset:0; pointer-events:none; opacity:0.5;
+    background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.06) 45%, transparent 60%);
+  }
+  .card-tier-tag{
+    position:absolute; top:10px; right:10px; font-size: 0.62rem; font-family: var(--font-display);
+    letter-spacing: 0.06em; padding: 3px 7px; border-radius: 999px; background: rgba(0,0,0,0.35);
+    text-transform: uppercase;
+  }
+  .tier-bronze .card-tier-tag{ color:#C69A6D; } .tier-silver .card-tier-tag{ color:#D7DEEC; }
+  .tier-gold .card-tier-tag{ color: var(--gold); } .tier-legendary .card-tier-tag{ color: var(--violet); }
+  .card-art{
+    width:100%; aspect-ratio: 1/1; border-radius: 10px; background: linear-gradient(135deg, #232C46, #171C2E);
+    background-size: cover; background-position:center; margin-bottom: 10px; border: 1px solid rgba(255,255,255,0.06);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .card-art.mystery{ background: linear-gradient(135deg, #3A2020, #1A1010); font-size: 2.6rem; }
+  .card-name{ font-family: var(--font-display); font-weight:600; font-size: 0.98rem; margin: 0 0 2px; }
+  .card-sub{ font-size: 0.7rem; color: var(--muted); margin: 0 0 10px; }
+  .stat-row{ display:flex; align-items:center; gap:8px; margin-bottom: 5px; }
+  .stat-label{ font-size: 0.66rem; width: 30px; color: var(--muted); font-family: var(--font-display); }
+  .stat-track{ flex:1; height: 6px; border-radius: 4px; background: rgba(255,255,255,0.07); overflow:hidden; }
+  .stat-fill{ height:100%; border-radius: 4px; }
+  .stat-fill.ATK{ background: linear-gradient(90deg, #FF9E6E, #FF6E6E); }
+  .stat-fill.DEF{ background: linear-gradient(90deg, #6EA8FF, #56E8D4); }
+  .stat-fill.SPD{ background: linear-gradient(90deg, #F2C55C, #FF9E6E); }
+  .stat-fill.HP{ background: linear-gradient(90deg, #56E8D4, #3BC7B4); }
+  .stat-num{ font-size: 0.66rem; color: var(--muted); width: 22px; text-align:right; }
+  .card.selectable{ cursor:pointer; transition: transform .15s ease, border-color .15s ease; }
+  .card.selectable:hover{ transform: translateY(-4px); }
+  .card.selected{ outline: 2px solid var(--cyan); outline-offset: 2px; }
+
+  /* ---------- PANELS ---------- */
+  section{ padding: 34px 0; border-top: 1px solid var(--border); }
+  .section-head{ display:flex; align-items:baseline; justify-content:space-between; gap:16px; margin-bottom: 22px; flex-wrap:wrap; }
+  .section-head h2{ font-family: var(--font-display); font-size: 1.35rem; margin:0; font-weight:600; }
+  .section-head .hint{ color: var(--muted); font-size: 0.88rem; }
+
+  .panel{ background: var(--panel); border: 1px solid var(--border); border-radius: 14px; padding: 22px; }
+  .field-grid{ display:grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 14px; }
+  @media (max-width: 760px){ .field-grid{ grid-template-columns: 1fr; } }
+  label{ font-size: 0.78rem; color: var(--muted); display:block; margin-bottom: 6px; }
+  input, select{
+    width:100%; background: var(--bg-2); border: 1px solid var(--border); color: var(--text);
+    padding: 11px 12px; border-radius: 8px; font-family: var(--font-body); font-size: 0.9rem;
+  }
+  input:focus, select:focus{ outline: 2px solid var(--cyan); outline-offset: 1px; }
+  .field{ margin-bottom: 0; }
+  .panel-actions{ display:flex; gap:12px; align-items:center; margin-top: 18px; flex-wrap:wrap; }
+  .status-msg{ font-size: 0.85rem; color: var(--muted); }
+  .status-msg.err{ color: var(--danger); }
+  .status-msg.ok{ color: var(--cyan); }
+
+  .card-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
+  .empty-note{ color: var(--muted); font-size: 0.92rem; padding: 30px 0; text-align:center; border: 1px dashed var(--border); border-radius: 12px; }
+
+  /* ---------- BATTLE ---------- */
+  .arena{ display:grid; grid-template-columns: 1fr auto 1fr; gap: 24px; align-items:start; }
+  @media (max-width: 760px){ .arena{ grid-template-columns: 1fr; } }
+  .fighter-slot{ display:flex; flex-direction:column; align-items:center; gap:14px; }
+  .fighter-slot .role{ font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.08em; color: var(--muted); }
+  .hp-bar-wrap{ width: 210px; }
+  .hp-bar-track{ height: 10px; border-radius: 6px; background: rgba(255,255,255,0.07); overflow:hidden; border:1px solid var(--border); }
+  .hp-bar-fill{ height:100%; background: linear-gradient(90deg, var(--cyan), #3BC7B4); transition: width .4s ease; }
+  .hp-bar-fill.low{ background: linear-gradient(90deg, var(--danger), #FF9E6E); }
+  .hp-text{ font-size: 0.72rem; color: var(--muted); margin-top:4px; text-align:center; }
+  .vs-col{ display:flex; flex-direction:column; align-items:center; justify-content:center; gap: 14px; padding-top: 60px; }
+  .vs-mark{ font-family: var(--font-display); font-size: 1.4rem; color: var(--violet); }
+  .battle-actions{ display:flex; flex-direction:column; gap:10px; }
+  .battle-log{
+    margin-top: 24px; background: var(--bg-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 14px 16px; max-height: 190px; overflow-y: auto; font-size: 0.85rem; color: var(--muted);
+  }
+  .battle-log p{ margin: 0 0 6px; }
+  .battle-log p:last-child{ margin-bottom:0; color: var(--text); }
+  .battle-log::-webkit-scrollbar{ width: 6px; }
+  .battle-log::-webkit-scrollbar-thumb{ background: var(--border); border-radius: 4px; }
+
+  footer{ padding: 30px 0 50px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); }
+  code{ background: var(--bg-2); padding: 2px 6px; border-radius: 5px; font-size: 0.85em; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="mark"></span>MOST WANTED</div>
+    <div class="nav-status" id="navStatus">wallet not connected</div>
+  </nav>
+
+  <section class="hero" style="border-top:none; padding-top:8px;">
+    <div>
+      <h1>Your wallet is your deck.</h1>
+      <p class="hero-tag">Assemble your Blockchain Banditz NFTs for battle, gather your gang.</p>
+      <p>Connect a wallet and every trait on your NFTs is read off-chain and forged into playing-card stats — attack, defense, speed, health. Then battle them, one card at a time.</p>
+      <div class="hero-actions">
+        <button class="btn btn-primary" id="connectBtn">Connect wallet</button>
+        <button class="btn btn-ghost" id="scrollToSetup">How it works ↓</button>
+      </div>
+    </div>
+    <div class="hero-card-stage">
+      <div class="card demo-card tier-legendary" style="width:230px;">
+        <span class="card-tier-tag">Legendary</span>
+        <div class="card-art" style="background: linear-gradient(135deg,#3A2E6E,#12182B);"></div>
+        <p class="card-name">Blockchain Banditz #9743</p>
+        <p class="card-sub">Traits → stats, live</p>
+        <div class="stat-row"><span class="stat-label">ATK</span><div class="stat-track"><div class="stat-fill ATK" style="width:78%"></div></div><span class="stat-num">78</span></div>
+        <div class="stat-row"><span class="stat-label">DEF</span><div class="stat-track"><div class="stat-fill DEF" style="width:52%"></div></div><span class="stat-num">52</span></div>
+        <div class="stat-row"><span class="stat-label">SPD</span><div class="stat-track"><div class="stat-fill SPD" style="width:64%"></div></div><span class="stat-num">64</span></div>
+        <div class="stat-row"><span class="stat-label">HP</span><div class="stat-track"><div class="stat-fill HP" style="width:71%"></div></div><span class="stat-num">213</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup">
+    <div class="section-head">
+      <h2>Summon your cards</h2>
+      <span class="hint">Type in your NFT's token ID — no scanning, instant lookup</span>
+    </div>
+    <div class="panel">
+      <div class="field-grid" style="grid-template-columns: 1fr 1fr 1fr;">
+        <div class="field">
+          <label for="chainSelect">Chain</label>
+          <select id="chainSelect">
+            <option value="cronos-mainnet" selected>Cronos</option>
+            <option value="eth-mainnet">Ethereum</option>
+            <option value="matic-mainnet">Polygon</option>
+            <option value="base-mainnet">Base</option>
+            <option value="arbitrum-mainnet">Arbitrum</option>
+            <option value="optimism-mainnet">Optimism</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="contractInput">Contract filter (optional)</label>
+          <input id="contractInput" type="text" placeholder="0x… collection address" autocomplete="off" value="0xddea51dd8649e0605770348ceb417c64c1b350c7">
+        </div>
+        <div class="field">
+          <label for="tokenIdsInput">Your token ID(s)</label>
+          <input id="tokenIdsInput" type="text" placeholder="e.g. 9743 or 9743,102" autocomplete="off">
+        </div>
+      </div>
+      <div class="panel-actions">
+        <button class="btn btn-primary" id="loadBtn">Load my NFTs as cards</button>
+        <span class="status-msg" id="loadStatus">Connect your wallet above — your cards load automatically.</span>
+      </div>
+    </div>
+  </section>
+
+  <section id="deck">
+    <div class="section-head">
+      <h2>Your deck</h2>
+      <span class="hint" id="deckHint">Click a card to select it as your fighter</span>
+    </div>
+    <div class="card-grid" id="cardGrid">
+      <div class="empty-note">No cards yet — connect a wallet and load your NFTs above.</div>
+    </div>
+  </section>
+
+  <section id="battle">
+    <div class="section-head">
+      <h2>Battle arena</h2>
+      <span class="hint">Turn order goes by speed. Attack or defend each round.</span>
+    </div>
+    <div class="panel">
+      <div class="arena">
+        <div class="fighter-slot">
+          <span class="role">Your fighter</span>
+          <div id="playerCardSlot"><div class="empty-note" style="width:210px;">Select a card below</div></div>
+          <div class="hp-bar-wrap" id="playerHpWrap" style="display:none;">
+            <div class="hp-bar-track"><div class="hp-bar-fill" id="playerHpFill"></div></div>
+            <div class="hp-text" id="playerHpText"></div>
+          </div>
+        </div>
+        <div class="vs-col">
+          <span class="vs-mark">VS</span>
+          <div class="battle-actions" id="battleActions" style="display:none;">
+            <button class="btn btn-primary" id="attackBtn">Attack</button>
+            <button class="btn" id="defendBtn">Defend</button>
+          </div>
+          <button class="btn btn-primary" id="findOpponentBtn" style="display:none;">Find opponent</button>
+          <button class="btn btn-danger" id="rematchBtn" style="display:none;">Rematch</button>
+        </div>
+        <div class="fighter-slot">
+          <span class="role">Opponent</span>
+          <div id="opponentCardSlot"><div class="empty-note" style="width:210px;">Awaiting challenger</div></div>
+          <div class="hp-bar-wrap" id="opponentHpWrap" style="display:none;">
+            <div class="hp-bar-track"><div class="hp-bar-fill" id="opponentHpFill"></div></div>
+            <div class="hp-text" id="opponentHpText"></div>
+          </div>
+        </div>
+      </div>
+      <div class="battle-log" id="battleLog"><p>Battle log will appear here.</p></div>
+    </div>
+  </section>
+
+  <section id="pvp">
+    <div class="section-head">
+      <h2>PvP</h2>
+      <span class="hint">Real turn-alternating battles against another person</span>
+    </div>
+    <div class="panel">
+      <div class="panel-actions" id="pvpModeButtons">
+        <button class="btn btn-primary" id="pvpCreateBtn">Create room</button>
+        <button class="btn" id="pvpJoinToggleBtn">Join with code</button>
+        <button class="btn" id="pvpQuickBtn">Quick match</button>
+      </div>
+      <div id="pvpJoinRow" style="display:none; margin-top:14px; display:flex; gap:10px; max-width:320px;">
+        <input id="pvpCodeInput" type="text" maxlength="6" placeholder="ROOM CODE" style="text-transform:uppercase;">
+        <button class="btn btn-primary" id="pvpJoinBtn">Join</button>
+      </div>
+      <p class="status-msg" id="pvpStatus" style="margin-top:14px;">Select a fighter above, then create or join a room.</p>
+
+      <div class="arena" id="pvpArena" style="display:none; margin-top:20px;">
+        <div class="fighter-slot">
+          <span class="role">You</span>
+          <div id="pvpMyCardSlot"></div>
+          <div class="hp-bar-wrap"><div class="hp-bar-track"><div class="hp-bar-fill" id="pvpMyHpFill"></div></div><div class="hp-text" id="pvpMyHpText"></div></div>
+        </div>
+        <div class="vs-col">
+          <span class="vs-mark">VS</span>
+          <div class="battle-actions" id="pvpActions">
+            <button class="btn btn-primary" id="pvpAttackBtn">Attack</button>
+            <button class="btn" id="pvpDefendBtn">Defend</button>
+          </div>
+        </div>
+        <div class="fighter-slot">
+          <span class="role">Opponent</span>
+          <div id="pvpOppCardSlot"></div>
+          <div class="hp-bar-wrap"><div class="hp-bar-track"><div class="hp-bar-fill" id="pvpOppHpFill"></div></div><div class="hp-text" id="pvpOppHpText"></div></div>
+        </div>
+      </div>
+      <div class="battle-log" id="pvpLog" style="display:none; margin-top:20px;"></div>
+    </div>
+  </section>
+
+  <footer>
+    Runs entirely in your browser. Stats are derived deterministically from each NFT's on-chain metadata traits — same NFT always produces the same card.
+  </footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------- state ----------------
+  const state = {
+    address: null,
+    cards: [],
+    playerCard: null,
+    opponentCard: null,
+    battle: null // {playerHp, playerMaxHp, oppHp, oppMaxHp, playerDefending, oppDefending, turn}
+  };
+
+  // ---------------- persisted prefs (per-viewer convenience only) ----------------
+  function loadPrefs(){
+    try{
+      const raw = localStorage.getItem('glyphdeck_prefs');
+      if(!raw) return;
+      const p = JSON.parse(raw);
+      if(p.chain) document.getElementById('chainSelect').value = p.chain;
+      if(p.contract) document.getElementById('contractInput').value = p.contract;
+    }catch(e){ /* ignore */ }
+  }
+  function savePrefs(){
+    try{
+      localStorage.setItem('glyphdeck_prefs', JSON.stringify({
+        chain: document.getElementById('chainSelect').value,
+        contract: document.getElementById('contractInput').value.trim()
+      }));
+    }catch(e){ /* ignore */ }
+  }
+
+  // ---------------- trait -> stat engine ----------------
+  function hashStr(s){
+    let h = 2166136261;
+    for(let i=0;i<s.length;i++){
+      h ^= s.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return (h >>> 0);
+  }
+
+  // Fixed bonuses for specific trait values, keyed by lowercased trait value.
+  // These stack on top of the normal hash-based stat contribution below.
+  // Add more entries here to give other traits their own fixed effect,
+  // e.g. 'diamond chain': { stat: 'ATK', amount: 8 }
+  const SPECIAL_TRAIT_BONUSES = {
+    'gold cowboy hat': { stat: 'DEF', amount: 10 }
+  };
+
+  function computeStats(attributes){
+    const stats = { ATK: 12, DEF: 12, SPD: 12, HP: 60 };
+    (attributes || []).forEach(attr=>{
+      const type = String(attr.trait_type || attr.traitType || attr.type || 'trait');
+      const value = String(attr.value !== undefined ? attr.value : '');
+      const bucket = hashStr(type) % 3; // 0=ATK 1=DEF 2=SPD
+      const magnitude = (hashStr(type + ':' + value) % 13) + 3; // 3..15
+      if(bucket === 0) stats.ATK += magnitude;
+      else if(bucket === 1) stats.DEF += magnitude;
+      else stats.SPD += magnitude;
+      stats.HP += Math.floor(magnitude * 1.6);
+
+      const bonus = SPECIAL_TRAIT_BONUSES[value.trim().toLowerCase()];
+      if(bonus){
+        stats[bonus.stat] += bonus.amount;
+      }
+    });
+    stats.ATK = Math.min(99, stats.ATK);
+    stats.DEF = Math.min(99, stats.DEF);
+    stats.SPD = Math.min(99, stats.SPD);
+    stats.HP = Math.min(320, stats.HP);
+    return stats;
+  }
+
+  function tierFor(stats){
+    const power = stats.ATK + stats.DEF + stats.SPD + Math.floor(stats.HP / 3);
+    if(power >= 210) return 'legendary';
+    if(power >= 170) return 'gold';
+    if(power >= 130) return 'silver';
+    return 'bronze';
+  }
+
+  // ---------------- demo card generator (used when no API key given) ----------------
+  const DEMO_TRAIT_TYPES = ['Background','Body','Eyes','Headwear','Aura','Weapon'];
+  const DEMO_VALUES = ['Crimson','Void','Prism','Ember','Glacier','Static','Wraith','Aurum','Neon','Ash'];
+  function demoCards(count){
+    const cards = [];
+    for(let i=0;i<count;i++){
+      const attrs = DEMO_TRAIT_TYPES.map(t => ({
+        trait_type: t,
+        value: DEMO_VALUES[(hashStr(t + i) + i) % DEMO_VALUES.length]
+      }));
+      cards.push({
+        id: 'demo-' + i,
+        name: 'Glyph #' + (1000 + i),
+        image: null,
+        attributes: attrs
+      });
+    }
+    return cards;
+  }
+
+  // ---------------- wallet connect ----------------
+  async function connectWallet(){
+    if(!window.ethereum){
+      setLoadStatus('No wallet extension detected. Install MetaMask or a similar wallet, or use demo cards below.', 'err');
+      return;
+    }
+    try{
+      const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+      state.address = accounts[0];
+      document.getElementById('navStatus').textContent = shortAddr(state.address);
+      document.getElementById('navStatus').classList.add('on');
+      document.getElementById('connectBtn').textContent = 'Connected';
+      document.getElementById('connectBtn').disabled = true;
+      setLoadStatus('Wallet connected. Enter your token ID(s) above, then tap Load.', 'ok');
+    }catch(e){
+      setLoadStatus('Wallet connection was declined or failed.', 'err');
+    }
+  }
+  function shortAddr(a){ return a.slice(0,6) + '…' + a.slice(-4); }
+
+  // ---------------- NFT fetching (manual token ID lookup) ----------------
+  async function fetchTokensByIds(tokenIdsStr, chain, contract){
+    let url = '/api/nfts?tokenIds=' + encodeURIComponent(tokenIdsStr) + '&chain=' + encodeURIComponent(chain);
+    if(contract) url += '&contract=' + encodeURIComponent(contract);
+    const res = await fetch(url);
+    const data = await res.json().catch(() => ({}));
+    if(!res.ok) throw new Error(data.error || ('Server error (' + res.status + ').'));
+    return data.cards || [];
+  }
+
+  function setLoadStatus(msg, kind){
+    const el = document.getElementById('loadStatus');
+    el.textContent = msg;
+    el.className = 'status-msg' + (kind ? ' ' + kind : '');
+  }
+
+  async function handleLoad(){
+    savePrefs();
+    const chain = document.getElementById('chainSelect').value;
+    const contract = document.getElementById('contractInput').value.trim();
+    const tokenIdsStr = document.getElementById('tokenIdsInput').value.trim();
+    const loadBtn = document.getElementById('loadBtn');
+    loadBtn.disabled = true;
+
+    try{
+      let cards;
+      if(!state.address){
+        setLoadStatus('Connect your wallet first — showing demo cards for now.', 'ok');
+        cards = demoCards(6);
+      } else if(!tokenIdsStr){
+        setLoadStatus('Enter the token ID(s) of the NFTs you own, e.g. 9743', 'err');
+        loadBtn.disabled = false;
+        return;
+      } else {
+        setLoadStatus('Loading your card(s)…', '');
+        cards = await fetchTokensByIds(tokenIdsStr, chain, contract);
+        if(cards.length === 0){
+          setLoadStatus('No cards found for that token ID / chain / contract combination.', 'err');
+          loadBtn.disabled = false;
+          return;
+        }
+        setLoadStatus('Loaded ' + cards.length + ' card' + (cards.length===1?'':'s') + '.', 'ok');
+      }
+      state.cards = cards.map(c => {
+        const stats = computeStats(c.attributes);
+        return Object.assign({}, c, { stats, tier: tierFor(stats) });
+      });
+      renderCardGrid();
+      syncHeroCard();
+    }catch(e){
+      setLoadStatus(e.message || 'Something went wrong loading NFTs.', 'err');
+    }finally{
+      loadBtn.disabled = false;
+    }
+  }
+
+  // ---------------- card rendering ----------------
+  function cardHtml(card, opts){
+    opts = opts || {};
+    const isMystery = !card.image && card.id && String(card.id).startsWith('rival-');
+    const art = card.image
+      ? 'background-image:url(\'' + card.image.replace(/'/g,"%27") + '\');'
+      : '';
+    const selectedClass = opts.selected ? ' selected' : '';
+    const selectableClass = opts.selectable ? ' selectable' : '';
+    return (
+      '<div class="card tier-' + card.tier + selectableClass + selectedClass + '" data-id="' + card.id + '">' +
+        '<span class="card-tier-tag">' + card.tier + '</span>' +
+        '<div class="card-art' + (isMystery ? ' mystery' : '') + '" style="' + art + '">' + (isMystery ? '❔' : '') + '</div>' +
+        '<p class="card-name">' + escapeHtml(card.name) + '</p>' +
+        '<p class="card-sub">' + (card.debug ? escapeHtml(card.debug) : (card.attributes && card.attributes.length ? card.attributes.length + ' traits forged' : 'no traits found')) + '</p>' +
+        statRow('ATK', card.stats.ATK, 99) +
+        statRow('DEF', card.stats.DEF, 99) +
+        statRow('SPD', card.stats.SPD, 99) +
+        statRow('HP', card.stats.HP, 320) +
+      '</div>'
+    );
+  }
+  function statRow(label, val, max){
+    const pct = Math.round((val / max) * 100);
+    return '<div class="stat-row"><span class="stat-label">' + label + '</span>' +
+      '<div class="stat-track"><div class="stat-fill ' + label + '" style="width:' + pct + '%"></div></div>' +
+      '<span class="stat-num">' + val + '</span></div>';
+  }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+  }
+
+  function renderCardGrid(){
+    const grid = document.getElementById('cardGrid');
+    if(!state.cards.length){
+      grid.innerHTML = '<div class="empty-note">No cards yet — connect a wallet and load your NFTs above.</div>';
+      return;
+    }
+    grid.innerHTML = state.cards.map(c => cardHtml(c, {
+      selectable: true,
+      selected: state.playerCard && state.playerCard.id === c.id
+    })).join('');
+    Array.from(grid.querySelectorAll('.card')).forEach(el=>{
+      el.addEventListener('click', () => selectPlayerCard(el.getAttribute('data-id')));
+    });
+  }
+
+  function selectPlayerCard(id){
+    const card = state.cards.find(c => c.id === id);
+    if(!card) return;
+    state.playerCard = card;
+    renderCardGrid();
+    document.getElementById('playerCardSlot').innerHTML = cardHtml(card);
+    document.getElementById('playerHpWrap').style.display = 'none';
+    document.getElementById('opponentHpWrap').style.display = 'none';
+    document.getElementById('battleActions').style.display = 'none';
+    document.getElementById('rematchBtn').style.display = 'none';
+    document.getElementById('opponentCardSlot').innerHTML = '<div class="empty-note" style="width:210px;">Awaiting challenger</div>';
+    document.getElementById('findOpponentBtn').style.display = 'inline-block';
+    logReset();
+  }
+
+  // ---------------- opponent selection ----------------
+  function pickOpponent(){
+    const pool = state.cards.filter(c => !state.playerCard || c.id !== state.playerCard.id);
+    if(pool.length > 0){
+      return pool[Math.floor(Math.random() * pool.length)];
+    }
+    // generate a rival if the wallet only holds one card
+    const attrs = DEMO_TRAIT_TYPES.map(t => ({ trait_type: t, value: DEMO_VALUES[Math.floor(Math.random()*DEMO_VALUES.length)] }));
+    const stats = computeStats(attrs);
+    return { id: 'rival-' + Date.now(), name: 'Wild Challenger', image: null, attributes: attrs, stats, tier: tierFor(stats) };
+  }
+
+  function startBattle(){
+    if(!state.playerCard) return;
+    state.opponentCard = pickOpponent();
+    document.getElementById('opponentCardSlot').innerHTML = cardHtml(state.opponentCard);
+
+    state.battle = {
+      playerHp: state.playerCard.stats.HP,
+      playerMaxHp: state.playerCard.stats.HP,
+      oppHp: state.opponentCard.stats.HP,
+      oppMaxHp: state.opponentCard.stats.HP,
+      playerDefending: false,
+      oppDefending: false,
+      over: false
+    };
+    document.getElementById('playerHpWrap').style.display = 'block';
+    document.getElementById('opponentHpWrap').style.display = 'block';
+    document.getElementById('battleActions').style.display = 'flex';
+    document.getElementById('findOpponentBtn').style.display = 'none';
+    document.getElementById('rematchBtn').style.display = 'none';
+    updateHpBars();
+    logReset();
+    log('A challenger appears: ' + state.opponentCard.name + ' (' + state.opponentCard.tier + ').');
+    log(state.playerCard.stats.SPD >= state.opponentCard.stats.SPD
+      ? 'Your fighter is faster and strikes first.'
+      : state.opponentCard.name + ' is faster and strikes first.');
+  }
+
+  function updateHpBars(){
+    const b = state.battle;
+    const pPct = Math.max(0, Math.round((b.playerHp / b.playerMaxHp) * 100));
+    const oPct = Math.max(0, Math.round((b.oppHp / b.oppMaxHp) * 100));
+    const pFill = document.getElementById('playerHpFill');
+    const oFill = document.getElementById('opponentHpFill');
+    pFill.style.width = pPct + '%';
+    oFill.style.width = oPct + '%';
+    pFill.classList.toggle('low', pPct <= 25);
+    oFill.classList.toggle('low', oPct <= 25);
+    document.getElementById('playerHpText').textContent = Math.max(0,b.playerHp) + ' / ' + b.playerMaxHp + ' HP';
+    document.getElementById('opponentHpText').textContent = Math.max(0,b.oppHp) + ' / ' + b.oppMaxHp + ' HP';
+  }
+
+  function logReset(){ document.getElementById('battleLog').innerHTML = ''; }
+  function log(msg){
+    const el = document.getElementById('battleLog');
+    const p = document.createElement('p');
+    p.textContent = msg;
+    el.appendChild(p);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function damageRoll(attacker, defenderDefending, defenderDef){
+    const effectiveDef = defenderDefending ? defenderDef * 1.8 : defenderDef;
+    let dmg = attacker - Math.floor(effectiveDef / 2);
+    dmg = Math.max(1, dmg);
+    const variance = 0.85 + Math.random() * 0.3; // +/-15%
+    return Math.max(1, Math.round(dmg * variance));
+  }
+
+  function playerAction(action){
+    const b = state.battle;
+    if(!b || b.over) return;
+    document.getElementById('battleActions').querySelectorAll('button').forEach(x => x.disabled = true);
+
+    const playerFirst = state.playerCard.stats.SPD >= state.opponentCard.stats.SPD;
+    const doPlayerTurn = () => {
+      b.playerDefending = (action === 'defend');
+      if(action === 'attack'){
+        const dmg = damageRoll(state.playerCard.stats.ATK, b.oppDefending, state.opponentCard.stats.DEF);
+        b.oppHp -= dmg;
+        log('You attack for ' + dmg + ' damage.');
+      } else {
+        log('You brace to defend the next hit.');
+      }
+    };
+    const doOppTurn = () => {
+      const oppAction = Math.random() < 0.75 ? 'attack' : 'defend';
+      b.oppDefending = (oppAction === 'defend');
+      if(oppAction === 'attack'){
+        const dmg = damageRoll(state.opponentCard.stats.ATK, b.playerDefending, state.playerCard.stats.DEF);
+        b.playerHp -= dmg;
+        log(state.opponentCard.name + ' attacks for ' + dmg + ' damage.');
+      } else {
+        log(state.opponentCard.name + ' braces to defend.');
+      }
+    };
+
+    if(playerFirst){ doPlayerTurn(); if(!checkEnd()) doOppTurn(); }
+    else { doOppTurn(); if(!checkEnd()) doPlayerTurn(); }
+
+    updateHpBars();
+    checkEnd();
+    if(!b.over){
+      document.getElementById('battleActions').querySelectorAll('button').forEach(x => x.disabled = false);
+    }
+  }
+
+  function checkEnd(){
+    const b = state.battle;
+    if(!b || b.over) return b && b.over;
+    if(b.oppHp <= 0){
+      b.over = true;
+      b.oppHp = 0;
+      updateHpBars();
+      log('Victory! ' + state.playerCard.name + ' wins the duel.');
+      endBattleUi();
+      return true;
+    }
+    if(b.playerHp <= 0){
+      b.over = true;
+      b.playerHp = 0;
+      updateHpBars();
+      log('Defeat. ' + state.opponentCard.name + ' wins the duel.');
+      endBattleUi();
+      return true;
+    }
+    return false;
+  }
+
+  function endBattleUi(){
+    document.getElementById('battleActions').style.display = 'none';
+    document.getElementById('rematchBtn').style.display = 'inline-block';
+  }
+
+  // ---------------- PvP ----------------
+  const pvp = { matchId: null, role: null, token: null, pollTimer: null, queueTimer: null };
+
+  function pvpSetStatus(msg){ document.getElementById('pvpStatus').textContent = msg; }
+
+  function requirePlayerCard(){
+    if(!state.playerCard){
+      pvpSetStatus('Select a fighter from "Your deck" above first.');
+      return false;
+    }
+    return true;
+  }
+
+  async function pvpCreate(){
+    if(!requirePlayerCard()) return;
+    pvpSetStatus('Creating room…');
+    try{
+      const res = await fetch('/api/pvp-create', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name: shortAddr(state.address || 'Player'), card: state.playerCard })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      pvp.matchId = data.matchId; pvp.role = data.role; pvp.token = data.token;
+      pvpSetStatus('Room created! Share this code with your opponent: ' + data.code);
+      pvpStartPolling();
+    }catch(e){ pvpSetStatus(e.message || 'Could not create room.'); }
+  }
+
+  async function pvpJoin(){
+    if(!requirePlayerCard()) return;
+    const code = document.getElementById('pvpCodeInput').value.trim().toUpperCase();
+    if(!code){ pvpSetStatus('Enter a room code.'); return; }
+    pvpSetStatus('Joining room…');
+    try{
+      const res = await fetch('/api/pvp-join', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ code, name: shortAddr(state.address || 'Player'), card: state.playerCard })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      pvp.matchId = data.matchId; pvp.role = data.role; pvp.token = data.token;
+      pvpSetStatus('Joined! Battle starting…');
+      pvpStartPolling();
+    }catch(e){ pvpSetStatus(e.message || 'Could not join that room.'); }
+  }
+
+  async function pvpQuick(){
+    if(!requirePlayerCard()) return;
+    pvpSetStatus('Looking for an opponent…');
+    try{
+      const res = await fetch('/api/pvp-quick', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ name: shortAddr(state.address || 'Player'), card: state.playerCard })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      if(data.matched){
+        pvp.matchId = data.matchId; pvp.role = data.role; pvp.token = data.token;
+        pvpSetStatus('Opponent found! Battle starting…');
+        pvpStartPolling();
+      } else {
+        pvpSetStatus('Waiting for another player to queue up…');
+        pvpQuickPoll(data.ticket);
+      }
+    }catch(e){ pvpSetStatus(e.message || 'Could not start quick match.'); }
+  }
+
+  function pvpQuickPoll(ticket){
+    clearInterval(pvp.queueTimer);
+    pvp.queueTimer = setInterval(async () => {
+      try{
+        const res = await fetch('/api/pvp-quick-status?ticket=' + encodeURIComponent(ticket));
+        const data = await res.json();
+        if(data.matched){
+          clearInterval(pvp.queueTimer);
+          pvp.matchId = data.matchId; pvp.role = data.role; pvp.token = data.token;
+          pvpSetStatus('Opponent found! Battle starting…');
+          pvpStartPolling();
+        }
+      }catch(e){ /* keep trying */ }
+    }, 2000);
+  }
+
+  function pvpStartPolling(){
+    document.getElementById('pvpArena').style.display = 'grid';
+    document.getElementById('pvpLog').style.display = 'block';
+    clearInterval(pvp.pollTimer);
+    pvpRefresh();
+    pvp.pollTimer = setInterval(pvpRefresh, 1500);
+  }
+
+  async function pvpRefresh(){
+    if(!pvp.matchId) return;
+    try{
+      const url = '/api/pvp-state?matchId=' + encodeURIComponent(pvp.matchId) +
+        '&role=' + encodeURIComponent(pvp.role) + '&token=' + encodeURIComponent(pvp.token);
+      const res = await fetch(url);
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      pvpRender(data);
+    }catch(e){ pvpSetStatus(e.message || 'Lost connection to the match.'); clearInterval(pvp.pollTimer); }
+  }
+
+  function pvpRender(match){
+    const me = match.players[pvp.role];
+    const oppRole = pvp.role === 'p1' ? 'p2' : 'p1';
+    const opp = match.players[oppRole];
+
+    if(match.status === 'waiting' || !opp){
+      pvpSetStatus('Waiting for an opponent' + (match.code ? ' — room code ' + match.code : '') + '…');
+      return;
+    }
+
+    document.getElementById('pvpMyCardSlot').innerHTML = cardHtml(me.card);
+    document.getElementById('pvpOppCardSlot').innerHTML = cardHtml(opp.card);
+
+    const myPct = Math.max(0, Math.round((me.hp / me.maxHp) * 100));
+    const oppPct = Math.max(0, Math.round((opp.hp / opp.maxHp) * 100));
+    const myFill = document.getElementById('pvpMyHpFill');
+    const oppFill = document.getElementById('pvpOppHpFill');
+    myFill.style.width = myPct + '%'; myFill.classList.toggle('low', myPct <= 25);
+    oppFill.style.width = oppPct + '%'; oppFill.classList.toggle('low', oppPct <= 25);
+    document.getElementById('pvpMyHpText').textContent = Math.max(0,me.hp) + ' / ' + me.maxHp + ' HP';
+    document.getElementById('pvpOppHpText').textContent = Math.max(0,opp.hp) + ' / ' + opp.maxHp + ' HP';
+
+    const logEl = document.getElementById('pvpLog');
+    logEl.innerHTML = match.log.map(m => '<p>' + escapeHtml(m) + '</p>').join('');
+    logEl.scrollTop = logEl.scrollHeight;
+
+    const isMyTurn = match.status === 'active' && match.turn === pvp.role;
+    document.getElementById('pvpAttackBtn').disabled = !isMyTurn;
+    document.getElementById('pvpDefendBtn').disabled = !isMyTurn;
+
+    if(match.status === 'finished'){
+      clearInterval(pvp.pollTimer);
+      pvpSetStatus(match.winner === pvp.role ? 'You won the duel!' : 'You lost the duel.');
+    } else {
+      pvpSetStatus(isMyTurn ? 'Your turn — attack or defend.' : "Waiting for opponent's move…");
+    }
+  }
+
+  async function pvpMove(action){
+    if(!pvp.matchId) return;
+    document.getElementById('pvpAttackBtn').disabled = true;
+    document.getElementById('pvpDefendBtn').disabled = true;
+    try{
+      const res = await fetch('/api/pvp-move', {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ matchId: pvp.matchId, role: pvp.role, token: pvp.token, action })
+      });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error);
+      pvpRender(data);
+    }catch(e){ pvpSetStatus(e.message || 'Move failed.'); }
+  }
+
+  function syncHeroCard(){
+    const real = state.cards.find(c => c.image);
+    if(!real) return;
+    const heroArt = document.querySelector('.hero-card-stage .card-art');
+    const heroName = document.querySelector('.hero-card-stage .card-name');
+    if(heroArt) heroArt.style.background = "url('" + real.image.replace(/'/g,"%27") + "') center/cover";
+    if(heroName) heroName.textContent = real.name;
+  }
+
+  // ---------------- wire up ----------------
+  document.getElementById('connectBtn').addEventListener('click', connectWallet);
+  document.getElementById('scrollToSetup').addEventListener('click', () => {
+    document.getElementById('setup').scrollIntoView({ behavior: 'smooth' });
+  });
+  document.getElementById('loadBtn').addEventListener('click', handleLoad);
+  document.getElementById('findOpponentBtn').addEventListener('click', startBattle);
+  document.getElementById('rematchBtn').addEventListener('click', startBattle);
+  document.getElementById('attackBtn').addEventListener('click', () => playerAction('attack'));
+  document.getElementById('defendBtn').addEventListener('click', () => playerAction('defend'));
+
+  document.getElementById('pvpCreateBtn').addEventListener('click', pvpCreate);
+  document.getElementById('pvpQuickBtn').addEventListener('click', pvpQuick);
+  document.getElementById('pvpJoinToggleBtn').addEventListener('click', () => {
+    const row = document.getElementById('pvpJoinRow');
+    row.style.display = row.style.display === 'none' ? 'flex' : 'none';
+  });
+  document.getElementById('pvpJoinBtn').addEventListener('click', pvpJoin);
+  document.getElementById('pvpAttackBtn').addEventListener('click', () => pvpMove('attack'));
+  document.getElementById('pvpDefendBtn').addEventListener('click', () => pvpMove('defend'));
+
+  loadPrefs();
+})();
+</script>
+</body>
+</html>
