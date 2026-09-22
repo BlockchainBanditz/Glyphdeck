@@ -48,13 +48,47 @@ async function getTokenURI(rpcUrl, contract, tokenId) {
   return decodeAbiString(result);
 }
 
+const IPFS_GATEWAYS = [
+  'https://ipfs.io/ipfs/',
+  'https://cloudflare-ipfs.com/ipfs/',
+  'https://dweb.link/ipfs/',
+  'https://gateway.pinata.cloud/ipfs/'
+];
+
+function ipfsHash(uri) {
+  if (uri.startsWith('ipfs://ipfs/')) return uri.slice('ipfs://ipfs/'.length);
+  if (uri.startsWith('ipfs://')) return uri.slice('ipfs://'.length);
+  return null;
+}
+
+async function fetchWithTimeout(url, ms) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function getMetadata(tokenUri) {
   if (tokenUri.startsWith('data:application/json;base64,')) {
     return JSON.parse(Buffer.from(tokenUri.split(',')[1], 'base64').toString('utf8'));
   }
-  const res = await fetch(ipfsToHttp(tokenUri));
-  if (!res.ok) throw new Error('metadata fetch failed');
-  return res.json();
+  const hash = ipfsHash(tokenUri);
+  const urlsToTry = hash ? IPFS_GATEWAYS.map(g => g + hash) : [tokenUri];
+
+  let lastError;
+  for (const url of urlsToTry) {
+    try {
+      const res = await fetchWithTimeout(url, 6000);
+      if (!res.ok) { lastError = new Error('HTTP ' + res.status + ' from ' + url); continue; }
+      return await res.json();
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw new Error('All metadata sources failed: ' + (lastError && lastError.message));
 }
 
 export default async function handler(req, res) {
@@ -80,8 +114,13 @@ export default async function handler(req, res) {
 
   try {
     const cards = await Promise.all(ids.map(async (tokenId) => {
+      let uri;
       try {
-        const uri = await getTokenURI(chainInfo.rpc, contract, tokenId);
+        uri = await getTokenURI(chainInfo.rpc, contract, tokenId);
+      } catch (e) {
+        return { id: contract + '-' + tokenId, name: 'NFT #' + tokenId, image: null, attributes: [], debug: 'tokenURI call failed: ' + e.message };
+      }
+      try {
         const meta = await getMetadata(uri);
         return {
           id: contract + '-' + tokenId,
@@ -90,7 +129,7 @@ export default async function handler(req, res) {
           attributes: meta.attributes || []
         };
       } catch (e) {
-        return { id: contract + '-' + tokenId, name: 'NFT #' + tokenId, image: null, attributes: [], error: true };
+        return { id: contract + '-' + tokenId, name: 'NFT #' + tokenId, image: null, attributes: [], debug: 'metadata fetch failed (uri: ' + uri + '): ' + e.message };
       }
     }));
 
