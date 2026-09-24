@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>BIC Universe - Team Rosters</title>
+
+<link href="https://fonts.cdnfonts.com/css/sprite-graffiti" rel="stylesheet">
+
+<style>
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&display=swap');
+
+:root {
+  --gold: linear-gradient(135deg, #d4af37, #f9e27d);
+}
+
+body {
+ margin:0;
+ font-family:'Poppins',sans-serif;
+ background:
+ radial-gradient(circle at 20% 20%,rgba(212,175,55,.08),transparent),
+ radial-gradient(circle at 80% 80%,rgba(255,255,255,.05),transparent),
+ #000;
+ color:white;
+ overflow-x:hidden;
+}
+
+
+/* LOADER */
+
+.loader {
+ position:fixed;
+ inset:0;
+ background:black;
+ display:flex;
+ justify-content:center;
+ align-items:center;
+ font-family:'Sprite Graffiti',cursive;
+ font-size:40px;
+ color:gold;
+ z-index:9999;
+ animation:fadeOut 1s ease forwards;
+ animation-delay:2s;
+}
+
+@keyframes fadeOut {
+ to {
+ opacity:0;
+ visibility:hidden;
+ }
+}
+
+
+/* PARTICLES */
+
+canvas {
+ position:fixed;
+ top:0;
+ left:0;
+ z-index:0;
+}
+
+
+/* GLOW */
+
+.glow {
+ position:fixed;
+ width:500px;
+ height:500px;
+ background:radial-gradient(circle,rgba(212,175,55,.15),transparent 60%);
+ pointer-events:none;
+ border-radius:50%;
+ transform:translate(-50%,-50%);
+ z-index:1;
+}
+
+
+/* NAV */
+
+header {
+ display:flex;
+ justify-content:space-between;
+ padding:20px 40px;
+ border-bottom:1px solid rgba(212,175,55,.3);
+ backdrop-filter:blur(10px);
+ position:relative;
+ z-index:2;
+}
+
+.logo {
+ font-family:'Sprite Graffiti',cursive;
+ font-size:24px;
+ background:var(--gold);
+ -webkit-background-clip:text;
+ -webkit-text-fill-color:transparent;
+}
+
+nav a {
+ margin:0 15px;
+ color:white;
+ text-decoration:none;
+ cursor:pointer;
+}
+
+
+/* PAGES */
+
+.page {
+ display:none;
+}
+
+.page.active {
+ display:block;
+}
+
+
+/* HERO */
+
+.hero {
+ text-align:center;
+ padding:120px 20px;
+ position:relative;
+ z-index:2;
+}
+
+.hero h1 {
+ font-family:'Sprite Graffiti',cursive;
+ font-size:70px;
+ background:var(--gold);
+ -webkit-background-clip:text;
+ -webkit-text-fill-color:transparent;
+ animation:shine 6s linear infinite;
+ background-size:200% 200%;
+}
+
+.tagline {
+ letter-spacing:10px;
+ opacity:.7;
+}
+
+.subtitle {
+ color:#ccc;
+}
+
+
+.gold-btn {
+ background:var(--gold);
+ color:black;
+ padding:15px 30px;
+ border-radius:30px;
+ cursor:pointer;
+ border:none;
+ margin:10px;
+ font-weight:bold;
+}
+
+
+/* SECTION */
+
+.section {
+ padding:80px 20px;
+ text-align:center;
+ position:relative;
+ z-index:2;
+}
+
+.section h2 {
+ font-family:'Playfair Display',serif;
+ color:#f5d97a;
+}
+
+
+.grid {
+ display:flex;
+ gap:30px;
+ justify-content:center;
+ flex-wrap:wrap;
+}
+
+
+.card {
+ background:rgba(255,255,255,.03);
+ border:1px solid rgba(212,175,55,.3);
+ border-radius:15px;
+ padding:20px;
+ width:240px;
+ transition:.3s;
+}
+
+.card:hover {
+ transform:scale(1.05);
+ box-shadow:0 20px 50px rgba(212,175,55,.3);
+}
+
+
+.team-card {
+ cursor:pointer;
+}
+
+.team-card:hover {
+ border-color:#f9e27d;
+ transform:scale(1.08);
+}
+
+
+.card img {
+ width:100%;
+ border-radius:10px;
+}
+
+
+.card h3 {
+ font-family:'Sprite Graffiti',cursive;
+ color:#f5d97a;
+}
+
+
+.meta {
+ font-size:12px;
+ color:#d4af37;
+}
+
+
+@keyframes shine {
+0% {
+ background-position:0%;
+}
+100% {
+ background-position:200%;
+}
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="loader">Loading BIC...</div>
+
+<canvas id="particles"></canvas>
+
+<div class="glow"></div>
+
+
+<header>
+
+<div class="logo">BIC</div>
+
+<nav>
+<a onclick="showPage('nft')">Home</a>
+<a onclick="showPage('bcl')">BCL League</a>
+</nav>
+
+</header>
+
+
+<!-- NFT PAGE -->
+
+<div id="nft" class="page active">
+
+<section class="hero">
+
+<h1>Blockchain Banditz</h1>
+
+<p class="tagline">BIC</p>
+
+<p class="subtitle">
+Elite Digital Outlaws
+</p>
+
+<button class="gold-btn" onclick="joinDiscord()">
+Enter the BIC
+</button>
+
+</section>
+
+
+<section class="section">
+
+<h2>Featured Banditz</h2>
+
+<div class="grid">
+
+<div class="card">
+
+<img src="https://via.placeholder.com/220">
+
+<h3>Bandit #001</h3>
+
+<p class="meta">
+Legendary
+</p>
+
+</div>
+
+
+<div class="card">
+
+<img src="https://via.placeholder.com/220">
+
+<h3>Bandit #002</h3>
+
+<p class="meta">
+Epic
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+</div>
+<!-- BCL PAGE -->
+
+<div id="bcl" class="page">
+
+
+<section class="hero">
+
+<h1>B.C.L</h1>
+
+<p class="tagline">
+B.i.c Crypto League
+</p>
+
+<p class="subtitle">
+Where Crypto Meets Competitive Gaming
+</p>
+
+
+<button class="gold-btn" onclick="showPage('nft')">
+Back to Banditz
+</button>
+
+
+<button class="gold-btn" onclick="showPage('rosters')">
+Team Rosters
+</button>
+
+
+</section>
+
+
+
+<section class="section">
+
+<h2>Top Teams</h2>
+
+
+<div class="grid">
+
+
+<div class="card team-card" onclick="showPage('alpha')">
+
+<h3>
+Team Alpha
+</h3>
+
+<p class="meta">
+Rank #1
+</p>
+
+<p>
+Game: Arc Raiders
+</p>
+
+</div>
+
+
+
+<div class="card team-card" onclick="showPage('chain')">
+
+<h3>
+Chain Breakers
+</h3>
+
+<p class="meta">
+Rank #2
+</p>
+
+<p>
+Game: Arc Raiders
+</p>
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+</div>
+
+
+
+
+
+<!-- TEAM ROSTERS PAGE -->
+
+<div id="rosters" class="page">
+
+
+<section class="hero">
+
+<h1>
+Team Rosters
+</h1>
+
+
+<p class="tagline">
+B.C.L Teams
+</p>
+
+
+<p class="subtitle">
+Official Player Lineups
+</p>
+
+
+
+<button class="gold-btn" onclick="showPage('bcl')">
+Back to BCL
+</button>
+
+
+</section>
+
+
+
+
+
+<section class="section">
+
+
+<h2>
+League Rosters
+</h2>
+
+
+
+<div class="grid">
+
+
+
+<div class="card team-card" onclick="showPage('alpha')">
+
+<h3>
+Team Alpha
+</h3>
+
+
+<p class="meta">
+Rank #1
+</p>
+
+
+<p>
+Game: Arc Raiders
+</p>
+
+
+<p>
+Click to view team
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="card team-card" onclick="showPage('chain')">
+
+<h3>
+Chain Breakers
+</h3>
+
+
+<p class="meta">
+Rank #2
+</p>
+
+
+<p>
+Game: Arc Raiders
+</p>
+
+
+<p>
+Click to view team
+</p>
+
+
+</div>
+
+
+
+
+
+<div class="card team-card" onclick="showPage('kings')">
+
+<h3>
+Crypto Kings
+</h3>
+
+
+<p class="meta">
+Rank #3
+</p>
+
+
+<p>
+Game: Arc Raiders
+</p>
+
+
+<p>
+Click to view team
+</p>
+
+
+</div>
+
+
+
+</div>
+
+
+</section>
+
+
+</div>
+
+
+
+
+
+
+<!-- TEAM ALPHA DEDICATED PAGE -->
+
+<div id="alpha" class="page">
+
+
+<section class="hero">
+
+<h1>
+Team Alpha
+</h1>
+
+
+<p class="tagline">
+B.C.L ELITE SQUAD
+</p>
+
+
+<p class="subtitle">
+Game: Arc Raiders
+</p>
+
+
+
+<button class="gold-btn" onclick="showPage('rosters')">
+Back To Rosters
+</button>
+
+
+</section>
+
+
+
+
+<section class="section">
+
+
+<h2>
+Team Alpha Roster
+</h2>
+
+
+<div class="grid">
+
+
+<div class="card">
+
+
+<h3>
+Team Alpha
+</h3>
+
+
+<p class="meta">
+Game: Arc Raiders
+</p>
+
+
+<p class="meta">
+Captain: Player 1
+</p>
+
+
+<p>
+Player 1<br>
+Player 2<br>
+Player 3<br>
+Player 4<br>
+Player 5
+</p>
+
+
+</div>
+
+
+</div>
+
+
+</section>
+
+
+</div>
+
+
+
+
+
+<!-- CHAIN BREAKERS PAGE -->
+
+<div id="chain" class="page">
+
+
+<section class="hero">
+
+<h1>
+Chain Breakers
+</h1>
+
+
+<p class="tagline">
+B.C.L TEAM
+</p>
+
+
+<p class="subtitle">
+Game: Arc Raiders
+</p>
+
+
+
+<button class="gold-btn" onclick="showPage('rosters')">
+Back To Rosters
+</button>
+
+
+</section>
+
+
+
+
+<section class="section">
+
+<h2>
+Chain Breakers Roster
+</h2>
+
+
+<div class="card">
+
+
+<p class="meta">
+Captain: Player A
+</p>
+
+
+<p>
+Player A<br>
+Player B<br>
+Player C<br>
+Player D<br>
+Player E
+</p>
+
+
+</div>
+
+
+</section>
+
+
+</div>
+<!-- CRYPTO KINGS PAGE -->
+
+<div id="kings" class="page">
+
+
+<section class="hero">
+
+<h1>
+Crypto Kings
+</h1>
+
+
+<p class="tagline">
+B.C.L TEAM
+</p>
+
+
+<p class="subtitle">
+Game: Arc Raiders
+</p>
+
+
+
+<button class="gold-btn" onclick="showPage('rosters')">
+Back To Rosters
+</button>
+
+
+</section>
+
+
+
+
+<section class="section">
+
+<h2>
+Crypto Kings Roster
+</h2>
+
+
+<div class="card">
+
+
+<p class="meta">
+Captain: TBD
+</p>
+
+
+<p>
+Open Slot<br>
+Open Slot<br>
+Open Slot<br>
+Open Slot<br>
+Open Slot
+</p>
+
+
+</div>
+
+
+</section>
+
+
+</div>
+
+
+
+
+
+<script>
+
+// PAGE SWITCH
+
+function showPage(pageId) {
+
+document.querySelectorAll('.page').forEach(page => {
+
+page.classList.remove('active');
+
+});
+
+
+document.getElementById(pageId).classList.add('active');
+
+
+window.scrollTo(0,0);
+
+}
+
+
+
+
+
+// DISCORD LINK
+
+function joinDiscord() {
+
+window.open(
+"https://discord.gg/YOUR-LINK-HERE",
+"_blank"
+);
+
+}
+
+
+
+
+
+// GLOW EFFECT
+
+const glow = document.querySelector('.glow');
+
+
+document.addEventListener('mousemove', e => {
+
+glow.style.left = e.clientX + 'px';
+
+glow.style.top = e.clientY + 'px';
+
+});
+
+
+
+
+
+// PARTICLES
+
+const canvas = document.getElementById("particles");
+
+const ctx = canvas.getContext("2d");
+
+
+canvas.width = window.innerWidth;
+
+canvas.height = window.innerHeight;
+
+
+let particles = [];
+
+
+
+for(let i = 0; i < 80; i++) {
+
+particles.push({
+
+x: Math.random() * canvas.width,
+
+y: Math.random() * canvas.height,
+
+r: Math.random() * 2,
+
+dx:(Math.random()-0.5)*0.5,
+
+dy:(Math.random()-0.5)*0.5
+
+});
+
+}
+
+
+
+
+
+function animate(){
+
+
+ctx.clearRect(
+0,
+0,
+canvas.width,
+canvas.height
+);
+
+
+
+particles.forEach(p => {
+
+
+p.x += p.dx;
+
+p.y += p.dy;
+
+
+
+ctx.beginPath();
+
+ctx.arc(
+p.x,
+p.y,
+p.r,
+0,
+Math.PI*2
+);
+
+
+ctx.fillStyle =
+"rgba(212,175,55,0.5)";
+
+
+ctx.fill();
+
+
+
+});
+
+
+
+requestAnimationFrame(animate);
+
+
+}
+
+
+
+animate();
+
+
+
+
+
+window.addEventListener("resize",()=>{
+
+
+canvas.width = window.innerWidth;
+
+canvas.height = window.innerHeight;
+
+
+});
+
+
+</script>
+
+
+</body>
+
+</html>
