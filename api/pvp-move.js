@@ -21,6 +21,11 @@ function damageRoll(atk, defenderDefending, def) {
   return Math.max(1, Math.round(dmg * variance));
 }
 
+function currentMonthKey() {
+  const d = new Date();
+  return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0');
+}
+
 function publicView(match) {
   const strip = (p) => p && { name: p.name, card: p.card, hp: p.hp, maxHp: p.maxHp, defending: p.defending };
   return {
@@ -69,6 +74,15 @@ export default async function handler(req, res) {
     match.status = 'finished';
     match.winner = role;
     match.log.push(me.name + ' wins the duel!');
+    if (me.address) {
+      const lbKey = 'leaderboard:pvp:' + currentMonthKey();
+      try {
+        await redis(['ZINCRBY', lbKey, '1', me.address.toLowerCase()]);
+        await redis(['EXPIRE', lbKey, '3456000']);
+      } catch (e) {
+        // Leaderboard write failing shouldn't break the match result itself.
+      }
+    }
   } else {
     match.turn = otherRole;
   }

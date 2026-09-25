@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing KV_REST_API_URL / KV_REST_API_TOKEN.' });
 
-  const { name, card } = req.body || {};
+  const { name, address, card } = req.body || {};
   if (!card || !card.stats) return res.status(400).json({ error: 'Missing card.' });
 
   // Try to find a valid (non-stale) waiting opponent.
@@ -54,8 +54,8 @@ export default async function handler(req, res) {
         (turn === 'p1' ? opponent.name : (name || 'Player')) + ' is faster and goes first.'
       ],
       players: {
-        p1: { token: opponent.token, name: opponent.name, card: opponent.card, hp: opponent.card.stats.HP, maxHp: opponent.card.stats.HP, defending: false },
-        p2: { token: myToken, name: name || 'Player', card, hp: card.stats.HP, maxHp: card.stats.HP, defending: false }
+        p1: { token: opponent.token, name: opponent.name, address: opponent.address || null, card: opponent.card, hp: opponent.card.stats.HP, maxHp: opponent.card.stats.HP, defending: false },
+        p2: { token: myToken, name: name || 'Player', address: address || null, card, hp: card.stats.HP, maxHp: card.stats.HP, defending: false }
       }
     };
 
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
   // No one waiting — join the queue ourselves.
   const ticket = randomUUID();
   const myToken = randomUUID();
-  await redis(['RPUSH', 'queue:public', JSON.stringify({ ticket, token: myToken, name: name || 'Player', card, createdAt: Date.now() })]);
+  await redis(['RPUSH', 'queue:public', JSON.stringify({ ticket, token: myToken, name: name || 'Player', address: address || null, card, createdAt: Date.now() })]);
 
   return res.status(200).json({ matched: false, ticket, token: myToken });
 }

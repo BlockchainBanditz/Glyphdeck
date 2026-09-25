@@ -19,7 +19,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing KV_REST_API_URL / KV_REST_API_TOKEN.' });
 
-  const { code, name, card } = req.body || {};
+  const { code, name, address, card } = req.body || {};
   if (!code || !card || !card.stats) return res.status(400).json({ error: 'Missing code or card.' });
 
   const matchId = await redis(['GET', 'code:' + code.toUpperCase()]);
@@ -34,7 +34,7 @@ export default async function handler(req, res) {
   }
 
   const token = randomUUID();
-  match.players.p2 = { token, name: name || 'Player 2', card, hp: card.stats.HP, maxHp: card.stats.HP, defending: false };
+  match.players.p2 = { token, name: name || 'Player 2', address: address || null, card, hp: card.stats.HP, maxHp: card.stats.HP, defending: false };
   match.status = 'active';
   match.turn = card.stats.SPD >= match.players.p1.card.stats.SPD ? 'p2' : 'p1';
   match.log.push((name || 'Player 2') + ' joined the room.');

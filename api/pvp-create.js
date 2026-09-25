@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
   if (!URL || !TOKEN) return res.status(500).json({ error: 'Server is missing KV_REST_API_URL / KV_REST_API_TOKEN.' });
 
-  const { name, card } = req.body || {};
+  const { name, address, card } = req.body || {};
   if (!card || !card.stats) return res.status(400).json({ error: 'Missing card.' });
 
   const matchId = randomUUID();
@@ -39,7 +39,7 @@ export default async function handler(req, res) {
     winner: null,
     log: ['Room created. Waiting for an opponent to join with code ' + code + '.'],
     players: {
-      p1: { token, name: name || 'Player 1', card, hp: card.stats.HP, maxHp: card.stats.HP, defending: false },
+      p1: { token, name: name || 'Player 1', address: address || null, card, hp: card.stats.HP, maxHp: card.stats.HP, defending: false },
       p2: null
     }
   };
